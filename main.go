@@ -31,7 +31,7 @@ func main() {
 		},
 	}
 
-	cashback, err := rakuten.RetrieveCashback()
+	cashback, err := rakuten.RetrieveCashback("petsmart")
 	if err != nil {
 		log.Fatal("Error retrieving cashback:", err)
 		panic(err)

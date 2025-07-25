@@ -10,10 +10,10 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const ScrapeUrl string = "https://www.rakuten.com/shop/petsmart"
+const ScrapeUrl string = "https://www.rakuten.com/shop/%s"
 const CashBackCssSelector string = "span[data-testid=\"online-cash-back\"]"
 
-func RetrieveCashback() (int, error) {
+func RetrieveCashback(keyword string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -24,11 +24,12 @@ func RetrieveCashback() (int, error) {
 		}
 	}()
 
-	fmt.Println("Scraping: " + ScrapeUrl)
+	scrapeUrl := fmt.Sprintf(ScrapeUrl, keyword)
+	fmt.Println("Scraping: " + scrapeUrl)
 
 	var cashbackText string
 	err := chromedp.Run(c,
-		chromedp.Navigate(ScrapeUrl),
+		chromedp.Navigate(scrapeUrl),
 		chromedp.WaitEnabled(CashBackCssSelector, chromedp.ByQuery),
 		chromedp.Text(CashBackCssSelector, &cashbackText, chromedp.ByQuery),
 	)
