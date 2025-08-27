@@ -10,6 +10,7 @@ import (
 	"github.com/danny-lee-tech/petsmart-alert/internal/config"
 	"github.com/danny-lee-tech/petsmart-alert/internal/history"
 	"github.com/danny-lee-tech/petsmart-alert/internal/notifier"
+	"github.com/danny-lee-tech/petsmart-alert/internal/petsmart"
 	"github.com/danny-lee-tech/petsmart-alert/internal/rakuten"
 	"gopkg.in/yaml.v2"
 )
@@ -31,22 +32,56 @@ func main() {
 		},
 	}
 
+	processRakuten(notif)
+	processPetsmart(notif)
+}
+
+func processRakuten(notif *notifier.Notifier) {
 	cashback, err := rakuten.RetrieveCashback("petsmart")
 	if err != nil {
 		log.Fatal("Error retrieving cashback:", err)
 		panic(err)
 	}
 
-	history := history.Init("rakuten", 1)
-	exists, err := history.CheckIfExists(strconv.Itoa(cashback))
+	rakutenHistory := history.Init("rakuten", 1)
+	exists, err := rakutenHistory.CheckIfExists(strconv.Itoa(cashback))
 	if err != nil {
-		log.Fatal("Error retrieving history:", err)
+		log.Fatal("Error retrieving rakuten history:", err)
 		panic(err)
 	}
 
 	if !exists {
 		notif.Notify(fmt.Sprintf("New Rakuten Cashback: %d%%", cashback))
-		history.RecordItemIfNotExist(strconv.Itoa(cashback))
+		rakutenHistory.RecordItemIfNotExist(strconv.Itoa(cashback))
+	}
+}
+
+func processPetsmart(notif *notifier.Notifier) {
+	promoCode, err := petsmart.RetrievePromoCode()
+	if err != nil {
+		log.Fatal("Error retrieving promo code:", err)
+		panic(err)
+	}
+
+	petsmartHistory := history.Init("petsmart", 1)
+
+	if promoCode == "" {
+		err := petsmartHistory.ClearAllItems()
+		if err != nil {
+			log.Fatal("Error clearing petsmart history", err)
+			panic(err)
+		}
+	} else {
+		exists, err := petsmartHistory.CheckIfExists(promoCode)
+		if err != nil {
+			log.Fatal("Error retrieving petsmart history:", err)
+			panic(err)
+		}
+
+		if !exists {
+			notif.Notify(fmt.Sprintf("New Petsmart Promo Code: %s", promoCode))
+			petsmartHistory.RecordItemIfNotExist(promoCode)
+		}
 	}
 }
 

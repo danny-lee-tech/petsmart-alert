@@ -90,3 +90,8 @@ func (history *History) RecordItemIfNotExist(item string) (bool, error) {
 
 	return true, nil
 }
+
+func (history *History) ClearAllItems() error {
+	err := os.Truncate(history.file, 0)
+	return err
+}
