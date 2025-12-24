@@ -79,7 +79,10 @@ func processPetsmart(notif *notifier.Notifier) {
 		}
 
 		if !exists {
-			notif.Notify(fmt.Sprintf("New Petsmart Promo Code: %s", promoCode))
+			err = notif.Notify(fmt.Sprintf("New Petsmart Promo Code: %s", promoCode))
+			if err != nil {
+				log.Fatal("Error in pushbullet notification:", err)
+			}
 			petsmartHistory.RecordItemIfNotExist(promoCode)
 		}
 	}
