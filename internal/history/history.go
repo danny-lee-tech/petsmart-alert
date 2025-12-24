@@ -1,6 +1,7 @@
 package history
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -93,5 +94,10 @@ func (history *History) RecordItemIfNotExist(item string) (bool, error) {
 
 func (history *History) ClearAllItems() error {
 	err := os.Truncate(history.file, 0)
+
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+
 	return err
 }
